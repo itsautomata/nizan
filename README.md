@@ -2,7 +2,9 @@
 
 a multi-agent debate and decision system. four AI agents with distinct roles engage in structured argumentation. the process produces an emergent verdict no single agent could reach alone.
 
-> **work in progress** — actively being built.
+*a tool to emerge some truth from variety.*
+
+> <sub>work in progress — actively being built.</sub>
 
 <p align="center">
   <img src="demo.gif" alt="nizan demo" width="720">
@@ -49,7 +51,7 @@ MODEL=anthropic/claude-sonnet-4-20250514
 ANTHROPIC_API_KEY=your-key-here
 ```
 
-the `.env` file is gitignored. your keys stay local.
+`.env` is gitignored. keys stay local.
 
 #### supported providers
 
@@ -116,12 +118,12 @@ structured debate. one side argues FOR, the other AGAINST.
         ▼
     ADVOCATE          argues FOR the position
         │
-    CRITIC            argues AGAINST the position
+     CRITIC           argues AGAINST the position
         │
     (repeat for N rounds)
         │
         ▼
-    JUDGE             scores both sides, picks a winner
+      JUDGE           scores both sides, picks a winner
 ```
 
 - **advocate** builds the strongest case for the position
@@ -152,12 +154,12 @@ structured decision analysis. both sides champion a specific option.
         ▼
     ADVOCATE          argues FOR Option A
         │
-    CRITIC            argues FOR Option B
+     CRITIC           argues FOR Option B
         │
     (repeat for N rounds)
         │
         ▼
-    JUDGE             conditional recommendation
+     JUDGE            conditional recommendation
 ```
 
 - **advocate** champions Option A with evidence and trade-offs
@@ -228,18 +230,11 @@ nizan/
 
 ## configuration
 
-### .env (your model and keys)
+### .env
 
-| variable | description | example |
-|----------|-------------|---------|
-| `MODEL` | litellm model string (required) | `anthropic/claude-sonnet-4-20250514` |
-| `ANTHROPIC_API_KEY` | anthropic key | `sk-ant-...` |
-| `OPENAI_API_KEY` | openai key | `sk-...` |
-| `GEMINI_API_KEY` | google key | `...` |
+see [supported providers](#supported-providers) for model strings and API key variables.
 
-only set the key for the provider you're using.
-
-### config.py (debate settings)
+### config.py
 
 | constant | description | default |
 |----------|-------------|---------|
