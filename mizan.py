@@ -67,6 +67,44 @@ def get_topic():
     return topic
 
 
+PRIORITIES = [
+    "reversibility       — I need to be able to undo this",
+    "risk tolerance      — I can't afford to fail",
+    "time pressure       — I need to decide now",
+    "cost                — resources are limited",
+    "optionality         — keep future paths open",
+    "long-term alignment — must fit where I'm going",
+]
+
+PRIORITY_KEYS = [
+    "reversibility",
+    "risk tolerance",
+    "time pressure",
+    "cost",
+    "optionality",
+    "long-term alignment",
+]
+
+
+def select_priorities():
+    print("\nwhat matters most? (pick up to 3, space to select, enter to confirm)\n")
+    menu = TerminalMenu(
+        PRIORITIES,
+        title="",
+        multi_select=True,
+        show_multi_select_hint=True,
+        multi_select_select_on_accept=False,
+        multi_select_empty_ok=True,
+    )
+    indices = menu.show()
+    if indices is None:
+        return None
+    if isinstance(indices, int):
+        indices = (indices,)
+    selected = [PRIORITY_KEYS[i] for i in indices]
+    return selected[:3] if selected else None
+
+
 def select_rounds():
     options = [str(r) for r in range(1, MAX_ROUNDS + 1)]
     print("\nselect number of rounds:\n")
@@ -94,13 +132,17 @@ def main():
         print("\n  no topic entered.\n")
         return
 
+    priorities = None
+    if mode == "decision":
+        priorities = select_priorities()
+
     rounds = select_rounds()
     if rounds is None:
         print("\n  cancelled.\n")
         return
 
     print()
-    run(topic, mode=mode, rounds=rounds)
+    run(topic, mode=mode, rounds=rounds, priorities=priorities)
 
 
 if __name__ == "__main__":

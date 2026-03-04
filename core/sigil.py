@@ -1,10 +1,11 @@
 class Sigil:
     """sigil, the shared record of the debate. every agent reads it before speaking."""
 
-    def __init__(self, topic, mode="normal"):
+    def __init__(self, topic, mode="normal", priorities=None):
         self._entries = []
         self.topic = topic
         self.mode = mode
+        self.priorities = priorities
 
     def add(self, role, content):
         self._entries.append({"role": role, "content": content})
@@ -21,6 +22,8 @@ class Sigil:
         lines = [f"# nizan: {artifact}\n"]
         lines.append(f"topic: {self.topic}\n")
         lines.append(f"mode: {self.mode}\n")
+        if self.priorities:
+            lines.append(f"priorities: {', '.join(self.priorities)}\n")
         lines.append("---\n")
         for entry in self._entries:
             lines.append(f"## {entry['role']}\n")

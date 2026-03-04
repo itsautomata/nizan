@@ -33,6 +33,20 @@ output format:
 }
 
 
-def respond(sigil, mode="normal"):
+PRIORITY_LABELS = {
+    "reversibility": "they need to be able to undo this",
+    "risk tolerance": "they can't afford to fail",
+    "time pressure": "they need to decide now",
+    "cost": "resources are limited",
+    "optionality": "they want to keep future paths open",
+    "long-term alignment": "this must fit where they're going",
+}
+
+
+def respond(sigil, mode="normal", priorities=None):
     """read the full transcript and deliver the verdict / recommendation."""
-    return call(PROMPTS[mode], sigil.render())
+    prompt = PROMPTS[mode]
+    if priorities:
+        lines = [f"- {p} — {PRIORITY_LABELS[p]}" for p in priorities]
+        prompt += "\n\nthe decision-maker's priorities (weigh these heavily):\n" + "\n".join(lines)
+    return call(prompt, sigil.render())

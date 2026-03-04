@@ -21,13 +21,16 @@ def slugify(text):
     return re.sub(r"[\s_]+", "-", text)[:60]
 
 
-def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS):
-    sigil = Sigil(topic, mode=mode)
+def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None):
+    sigil = Sigil(topic, mode=mode, priorities=priorities)
 
     label = "structured debate" if mode == "normal" else "decision analysis"
     print(f"\nnizan: {label}\n")
     print(f"topic: {topic}")
-    print(f"mode: {mode} | rounds: {rounds}\n")
+    header = f"mode: {mode} | rounds: {rounds}"
+    if priorities:
+        header += f" | priorities: {', '.join(priorities)}"
+    print(header + "\n")
     print("=" * 60)
 
     # moderator frames the debate
@@ -58,7 +61,7 @@ def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS):
     # judge delivers verdict
     judge_label = "evaluating" if mode == "normal" else "analyzing"
     print(f"\n[JUDGE] {judge_label}...\n")
-    verdict = judge.respond(sigil, mode=mode)
+    verdict = judge.respond(sigil, mode=mode, priorities=priorities)
     sigil.add("judge", verdict)
     print("\n\n" + "=" * 60)
 
