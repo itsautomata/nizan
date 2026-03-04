@@ -2,6 +2,8 @@
 
 a multi-agent debate and decision system. four AI agents with distinct roles engage in structured argumentation. the process produces an emergent verdict no single agent could reach alone.
 
+> **work in progress** — actively being built.
+
 <p align="center">
   <img src="demo.gif" alt="nizan demo" width="720">
 </p>
