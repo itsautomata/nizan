@@ -1,9 +1,10 @@
 """nizan: interactive menu entry point."""
 
 import os
+import glob
 from simple_term_menu import TerminalMenu
 from config import MAX_ROUNDS, DEFAULT_MODE
-from debate import run
+from debate import run, reopen, RECORD_DIRS
 
 GUIDELINES = {
     "normal": """
@@ -40,7 +41,7 @@ GUIDELINES = {
 """,
 }
 
-MODES = ["normal", "decision"]
+MODES = ["normal", "decision", "reopen"]
 
 
 def select_mode():
@@ -117,6 +118,27 @@ def select_priorities():
     return selected[:3] if selected else None
 
 
+def select_ruling():
+    """list saved rulings and let the user pick one to reopen."""
+    ruling_dir = RECORD_DIRS["decision"]
+    if not os.path.isdir(ruling_dir):
+        print("\n  no rulings found.\n")
+        return None
+
+    files = sorted(glob.glob(os.path.join(ruling_dir, "*.md")))
+    if not files:
+        print("\n  no rulings found.\n")
+        return None
+
+    names = [os.path.basename(f) for f in files]
+    print("\nselect ruling to reopen:\n")
+    menu = TerminalMenu(names, title="")
+    idx = menu.show()
+    if idx is None:
+        return None
+    return files[idx]
+
+
 def select_rounds():
     options = [str(r) for r in range(1, MAX_ROUNDS + 1)]
     print("\nselect number of rounds:\n")
@@ -135,6 +157,15 @@ def main():
     mode = select_mode()
     if mode is None:
         print("\n  cancelled.\n")
+        return
+
+    if mode == "reopen":
+        ruling_path = select_ruling()
+        if ruling_path is None:
+            print("\n  cancelled.\n")
+            return
+        print()
+        reopen(ruling_path)
         return
 
     show_guidelines(mode)

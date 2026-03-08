@@ -22,7 +22,7 @@ def slugify(text):
     return re.sub(r"[\s_]+", "-", text)[:60]
 
 
-def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None, context_file=None):
+def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None, context_file=None, interactive=True):
     context = None
     context_source = None
 
@@ -78,18 +78,113 @@ def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None, context_file=N
     sigil.add("judge", verdict)
     print("\n\n" + "=" * 60)
 
+    # reopening loop (decision mode, interactive only)
+    if mode == "decision" and interactive:
+        reopen_num = 0
+        while True:
+            factor = input("\n  new factor? (enter to finish): ").strip()
+            if not factor:
+                break
+            reopen_num += 1
+
+            sigil.add("new_factor", factor)
+            print(f"\n[NEW FACTOR #{reopen_num}] {factor}")
+            print("\n" + "-" * 60)
+
+            print("\n[ADVOCATE] reopening argument...\n")
+            adv_response = advocate.respond(sigil, mode="reopen")
+            sigil.add("advocate", adv_response)
+            print("\n\n" + "-" * 60)
+
+            print("\n[CRITIC] reopening argument...\n")
+            crt_response = critic.respond(sigil, mode="reopen")
+            sigil.add("critic", crt_response)
+            print("\n\n" + "-" * 60)
+
+            print("\n[JUDGE] re-evaluating...\n")
+            verdict = judge.respond(sigil, mode="reopen", priorities=priorities)
+            sigil.add("judge", verdict)
+            print("\n\n" + "=" * 60)
+
     # save the record
     artifact = "sigil" if mode == "normal" else "ruling"
     record_dir = RECORD_DIRS[mode]
     os.makedirs(record_dir, exist_ok=True)
-    filename = f"{date.today()}_{slugify(topic)}.md"
+
+    auto_slug = slugify(topic)
+    if interactive:
+        custom = input(f"\n  save as ({auto_slug}): ").strip()
+        if custom:
+            auto_slug = slugify(custom)
+
+    filename = f"{date.today()}_{auto_slug}.md"
     path = os.path.join(record_dir, filename)
     sigil.save(path)
     print(f"\ncomplete. {artifact} saved to: {artifact}/{filename}\n")
+
+
+def reopen(ruling_path, priorities=None):
+    """reopen a saved ruling with new factors."""
+    sigil = Sigil.load(ruling_path)
+
+    print(f"\nnizan: reopening\n")
+    print(f"topic: {sigil.topic}")
+    print(f"original ruling: {os.path.basename(ruling_path)}\n")
+    print("=" * 60)
+
+    # print the original judge's ruling (last judge entry)
+    for entry in reversed(sigil._entries):
+        if entry["role"] == "judge":
+            print(f"\n[JUDGE] previous ruling:\n\n{entry['content']}")
+            break
+    print("\n" + "=" * 60)
+
+    reopen_num = 0
+    while True:
+        factor = input("\n  new factor? (enter to finish): ").strip()
+        if not factor:
+            if reopen_num == 0:
+                print("\n  no factors introduced.\n")
+                return
+            break
+        reopen_num += 1
+
+        sigil.add("new_factor", factor)
+        print(f"\n[NEW FACTOR #{reopen_num}] {factor}")
+        print("\n" + "-" * 60)
+
+        print("\n[ADVOCATE] reopening argument...\n")
+        adv_response = advocate.respond(sigil, mode="reopen")
+        sigil.add("advocate", adv_response)
+        print("\n\n" + "-" * 60)
+
+        print("\n[CRITIC] reopening argument...\n")
+        crt_response = critic.respond(sigil, mode="reopen")
+        sigil.add("critic", crt_response)
+        print("\n\n" + "-" * 60)
+
+        print("\n[JUDGE] re-evaluating...\n")
+        verdict = judge.respond(sigil, mode="reopen", priorities=priorities or sigil.priorities)
+        sigil.add("judge", verdict)
+        print("\n\n" + "=" * 60)
+
+    # save updated ruling
+    record_dir = RECORD_DIRS["decision"]
+    os.makedirs(record_dir, exist_ok=True)
+
+    auto_slug = slugify(sigil.topic) + "-reopened"
+    custom = input(f"\n  save as ({auto_slug}): ").strip()
+    if custom:
+        auto_slug = slugify(custom)
+
+    filename = f"{date.today()}_{auto_slug}.md"
+    path = os.path.join(record_dir, filename)
+    sigil.save(path)
+    print(f"\ncomplete. ruling saved to: ruling/{filename}\n")
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print('usage: python debate.py "your debate topic here"')
         sys.exit(1)
-    run(sys.argv[1])
+    run(sys.argv[1], interactive=False)

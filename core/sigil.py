@@ -1,3 +1,6 @@
+import re
+
+
 class Sigil:
     """sigil, the shared record of the debate. every agent reads it before speaking."""
 
@@ -8,6 +11,48 @@ class Sigil:
         self.priorities = priorities
         self.context = context
         self.context_source = context_source
+
+    @classmethod
+    def load(cls, path):
+        """reconstruct a sigil from a saved ruling/sigil markdown file."""
+        with open(path) as f:
+            text = f.read()
+
+        # parse metadata from header
+        topic = ""
+        mode = "normal"
+        priorities = None
+        context_source = None
+
+        topic_match = re.search(r"^topic: (.+)$", text, re.MULTILINE)
+        if topic_match:
+            topic = topic_match.group(1).strip()
+
+        mode_match = re.search(r"^mode: (.+)$", text, re.MULTILINE)
+        if mode_match:
+            mode = mode_match.group(1).strip()
+
+        pri_match = re.search(r"^priorities: (.+)$", text, re.MULTILINE)
+        if pri_match:
+            priorities = [p.strip() for p in pri_match.group(1).split(",")]
+
+        ctx_match = re.search(r"^context: (.+)$", text, re.MULTILINE)
+        if ctx_match:
+            context_source = ctx_match.group(1).strip()
+
+        sigil = cls(topic, mode=mode, priorities=priorities, context_source=context_source)
+
+        # parse entries: ## role followed by content until next --- or end
+        parts = re.split(r"^## (\w+)\n", text, flags=re.MULTILINE)
+        # parts[0] is header, then alternating: role, content, role, content...
+        for i in range(1, len(parts) - 1, 2):
+            role = parts[i].strip()
+            content = parts[i + 1].strip()
+            # remove trailing ---
+            content = re.sub(r"\n---\s*$", "", content).strip()
+            sigil.add(role, content)
+
+        return sigil
 
     def add(self, role, content):
         self._entries.append({"role": role, "content": content})
