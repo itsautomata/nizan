@@ -85,8 +85,9 @@ the menu walks you through:
 1. **select mode**: normal or decision (arrow keys)
 2. **guidelines**: how to frame your topic for the selected mode
 3. **enter topic**: type your question
-4. **select rounds**: 1 to 4 (arrow keys, default 2)
-5. the debate runs
+4. **context file** (optional): path to a document to ground the debate in
+5. **select rounds**: 1 to 4 (arrow keys, default 2)
+6. the debate runs
 
 ### quick run
 
@@ -166,6 +167,19 @@ structured decision analysis. both sides champion a specific option.
 - **critic** champions Option B (not just attacking A, building B's case)
 - **judge** gives a conditional recommendation: "choose A if..., choose B if..."
 
+decision mode also lets you select **priorities** (up to 3) that shape the judge's recommendation:
+
+```
+reversibility       — I need to be able to undo this
+risk tolerance      — I can't afford to fail
+time pressure       — I need to decide now
+cost                — resources are limited
+optionality         — keep future paths open
+long-term alignment — must fit where I'm going
+```
+
+the judge weighs arguments through these lenses, producing a recommendation aligned with what actually matters to the decision-maker.
+
 records saved to `ruling/`.
 
 how to frame your topic:
@@ -179,6 +193,12 @@ bad:
   "what database should I use?"   (too vague, no two options)
   "is rust good?"                  (not a choice)
 ```
+
+### context injection (RAG)
+
+optionally provide a document (`.md`, `.txt`) to ground the debate in real information. the file is chunked, embedded, and stored in a local vector database (ChromaDB). the most relevant chunks are retrieved using the topic as a query and injected into the shared transcript before the debate starts.
+
+all agents reason against the actual document, not just general knowledge.
 
 ---
 
@@ -215,6 +235,7 @@ nizan/
 │   └── judge.py            ← evaluates and verdicts
 ├── core/
 │   ├── llm.py              ← LLM wrapper (litellm, any provider)
+│   ├── rag.py              ← RAG context retrieval (chromadb)
 │   └── sigil.py            ← shared transcript class
 ├── sigil/                  ← saved debate records (normal mode)
 ├── ruling/                 ← saved decision records (decision mode)
@@ -248,4 +269,4 @@ see [supported providers](#supported-providers) for model strings and API key va
 
 - python 3.9+
 - an API key for your chosen provider (or ollama/lm studio running locally)
-- dependencies: `litellm`, `python-dotenv`, `simple-term-menu`
+- dependencies: `litellm`, `python-dotenv`, `simple-term-menu`, `chromadb`

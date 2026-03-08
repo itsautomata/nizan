@@ -1,5 +1,6 @@
 """nizan: interactive menu entry point."""
 
+import os
 from simple_term_menu import TerminalMenu
 from config import MAX_ROUNDS, DEFAULT_MODE
 from debate import run
@@ -67,6 +68,17 @@ def get_topic():
     return topic
 
 
+def get_context_file():
+    path = input("  context file (optional, enter to skip): ").strip()
+    if not path:
+        return None
+    path = os.path.expanduser(path)
+    if not os.path.isfile(path):
+        print(f"  file not found: {path}")
+        return None
+    return path
+
+
 PRIORITIES = [
     "reversibility       — I need to be able to undo this",
     "risk tolerance      — I can't afford to fail",
@@ -132,6 +144,8 @@ def main():
         print("\n  no topic entered.\n")
         return
 
+    context_file = get_context_file()
+
     priorities = None
     if mode == "decision":
         priorities = select_priorities()
@@ -142,7 +156,7 @@ def main():
         return
 
     print()
-    run(topic, mode=mode, rounds=rounds, priorities=priorities)
+    run(topic, mode=mode, rounds=rounds, priorities=priorities, context_file=context_file)
 
 
 if __name__ == "__main__":

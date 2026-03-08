@@ -7,6 +7,7 @@ from datetime import date
 from core.sigil import Sigil
 from agents import moderator, advocate, critic, judge
 from config import ROUNDS, DEFAULT_MODE
+from core import rag
 
 RECORD_DIRS = {
     "normal": os.path.join(os.path.dirname(__file__), "sigil"),
@@ -21,8 +22,18 @@ def slugify(text):
     return re.sub(r"[\s_]+", "-", text)[:60]
 
 
-def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None):
-    sigil = Sigil(topic, mode=mode, priorities=priorities)
+def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None, context_file=None):
+    context = None
+    context_source = None
+
+    if context_file:
+        context_source = os.path.basename(context_file)
+        print(f"\n  loading context from {context_source}...")
+        n = rag.load(context_file)
+        context = rag.retrieve(topic)
+        print(f"  {n} chunks indexed, top 5 retrieved.\n")
+
+    sigil = Sigil(topic, mode=mode, priorities=priorities, context=context, context_source=context_source)
 
     label = "structured debate" if mode == "normal" else "decision analysis"
     print(f"\nnizan: {label}\n")
@@ -30,6 +41,8 @@ def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None):
     header = f"mode: {mode} | rounds: {rounds}"
     if priorities:
         header += f" | priorities: {', '.join(priorities)}"
+    if context_source:
+        header += f" | context: {context_source}"
     print(header + "\n")
     print("=" * 60)
 

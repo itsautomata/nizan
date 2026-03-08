@@ -14,7 +14,9 @@ output format:
 1. the debate question (reframed for clarity)
 2. what the Advocate must argue (FOR)
 3. what the Critic must argue (AGAINST)
-4. ground rules (2-3 sentences)""",
+4. ground rules (2-3 sentences)
+
+if a [CONTEXT] block is provided, ground your framing in its specifics. reference concrete details from the context.""",
 
     "decision": """you are the Moderator of a structured decision analysis.
 
@@ -29,7 +31,9 @@ output format:
 1. the decision (reframed for clarity)
 2. Option A: what the Advocate must argue FOR
 3. Option B: what the Critic must argue FOR
-4. ground rules (2-3 sentences)""",
+4. ground rules (2-3 sentences)
+
+if a [CONTEXT] block is provided, ground your framing in its specifics. reference concrete details from the context.""",
 }
 
 
