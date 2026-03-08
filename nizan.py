@@ -5,39 +5,40 @@ import glob
 from simple_term_menu import TerminalMenu
 from config import MAX_ROUNDS, DEFAULT_MODE
 from debate import run, reopen, RECORD_DIRS
+from core import theme as t
 
 GUIDELINES = {
-    "normal": """
-  ┌─────────────────────────────────────────────────┐
-  │  NORMAL MODE: structured debate                  │
+    "normal": f"""
+  {t.GREEN}┌─────────────────────────────────────────────────┐
+  │  {t.BRIGHT_GREEN}{t.BOLD}NORMAL MODE{t.RESET}{t.GREEN}: structured debate                 │
   │                                                 │
-  │  frame your topic as a debatable question       │
-  │  with two genuine sides.                        │
+  │  {t.RESET}frame your topic as a debatable question{t.GREEN}       │
+  │  {t.RESET}with two genuine sides.{t.GREEN}                        │
   │                                                 │
-  │  good:                                          │
-  │    "should AI models be open source?"            │
-  │    "is remote work better than office work?"     │
+  │  {t.BRIGHT_GREEN}good:{t.GREEN}                                          │
+  │    {t.RESET}"should AI models be open source?"{t.GREEN}            │
+  │    {t.RESET}"is remote work better than office work?"{t.GREEN}     │
   │                                                 │
-  │  bad:                                           │
-  │    "what is machine learning?"  (not debatable)  │
-  │    "list the benefits of X"    (one-sided)       │
-  └─────────────────────────────────────────────────┘
+  │  {t.DIM}bad:{t.RESET}{t.GREEN}                                           │
+  │    {t.DIM}"what is machine learning?"  (not debatable){t.RESET}{t.GREEN}  │
+  │    {t.DIM}"list the benefits of X"    (one-sided){t.RESET}{t.GREEN}       │
+  └─────────────────────────────────────────────────┘{t.RESET}
 """,
-    "decision": """
-  ┌─────────────────────────────────────────────────┐
-  │  DECISION MODE: structured decision analysis     │
+    "decision": f"""
+  {t.GREEN}┌─────────────────────────────────────────────────┐
+  │  {t.BRIGHT_GREEN}{t.BOLD}DECISION MODE{t.RESET}{t.GREEN}: structured decision analysis    │
   │                                                 │
-  │  frame your topic as a choice between two       │
-  │  specific alternatives.                         │
+  │  {t.RESET}frame your topic as a choice between two{t.GREEN}       │
+  │  {t.RESET}specific alternatives.{t.GREEN}                         │
   │                                                 │
-  │  good:                                          │
-  │    "rust vs go for a new CLI tool"               │
-  │    "postgres vs mongodb for user analytics"      │
+  │  {t.BRIGHT_GREEN}good:{t.GREEN}                                          │
+  │    {t.RESET}"rust vs go for a new CLI tool"{t.GREEN}               │
+  │    {t.RESET}"postgres vs mongodb for user analytics"{t.GREEN}      │
   │                                                 │
-  │  bad:                                           │
-  │    "what database should I use?"  (too vague)    │
-  │    "is rust good?"               (not a choice)  │
-  └─────────────────────────────────────────────────┘
+  │  {t.DIM}bad:{t.RESET}{t.GREEN}                                           │
+  │    {t.DIM}"what database should I use?"  (too vague){t.RESET}{t.GREEN}    │
+  │    {t.DIM}"is rust good?"               (not a choice){t.RESET}{t.GREEN}  │
+  └─────────────────────────────────────────────────┘{t.RESET}
 """,
 }
 
@@ -45,12 +46,14 @@ MODES = ["normal", "decision", "reopen"]
 
 
 def select_mode():
-    print("\nnizan\n")
-    print("select mode:\n")
+    print(t.banner())
+    print(f"  {t.label('select mode:')}\n")
     menu = TerminalMenu(
         MODES,
         title="",
         cursor_index=MODES.index(DEFAULT_MODE),
+        menu_cursor_style=("fg_green", "bold"),
+        menu_highlight_style=("fg_green", "bold"),
     )
     idx = menu.show()
     if idx is None:
@@ -63,19 +66,19 @@ def show_guidelines(mode):
 
 
 def get_topic():
-    topic = input("  enter your topic: ").strip()
+    topic = input(f"  {t.label('enter your topic:')} ").strip()
     if not topic:
         return None
     return topic
 
 
 def get_context_file():
-    path = input("  context file (optional, enter to skip): ").strip()
+    path = input(f"  {t.dim('context file (optional, enter to skip):')} ").strip()
     if not path:
         return None
     path = os.path.expanduser(path)
     if not os.path.isfile(path):
-        print(f"  file not found: {path}")
+        print(f"  {t.dim('file not found:')} {path}")
         return None
     return path
 
@@ -100,7 +103,7 @@ PRIORITY_KEYS = [
 
 
 def select_priorities():
-    print("\nwhat matters most? (pick up to 3, space to select, enter to confirm)\n")
+    print(f"\n  {t.label('what matters most?')} {t.dim('(pick up to 3, space to select, enter to confirm)')}\n")
     menu = TerminalMenu(
         PRIORITIES,
         title="",
@@ -108,6 +111,8 @@ def select_priorities():
         show_multi_select_hint=True,
         multi_select_select_on_accept=False,
         multi_select_empty_ok=True,
+        menu_cursor_style=("fg_green", "bold"),
+        menu_highlight_style=("fg_green", "bold"),
     )
     indices = menu.show()
     if indices is None:
@@ -122,17 +127,22 @@ def select_ruling():
     """list saved rulings and let the user pick one to reopen."""
     ruling_dir = RECORD_DIRS["decision"]
     if not os.path.isdir(ruling_dir):
-        print("\n  no rulings found.\n")
+        print(f"\n  {t.dim('no rulings found.')}\n")
         return None
 
     files = sorted(glob.glob(os.path.join(ruling_dir, "*.md")))
     if not files:
-        print("\n  no rulings found.\n")
+        print(f"\n  {t.dim('no rulings found.')}\n")
         return None
 
     names = [os.path.basename(f) for f in files]
-    print("\nselect ruling to reopen:\n")
-    menu = TerminalMenu(names, title="")
+    print(f"\n  {t.label('select ruling to reopen:')}\n")
+    menu = TerminalMenu(
+        names,
+        title="",
+        menu_cursor_style=("fg_green", "bold"),
+        menu_highlight_style=("fg_green", "bold"),
+    )
     idx = menu.show()
     if idx is None:
         return None
@@ -141,11 +151,13 @@ def select_ruling():
 
 def select_rounds():
     options = [str(r) for r in range(1, MAX_ROUNDS + 1)]
-    print("\nselect number of rounds:\n")
+    print(f"\n  {t.label('select number of rounds:')}\n")
     menu = TerminalMenu(
         options,
         title="",
         cursor_index=1,  # default to 2 rounds
+        menu_cursor_style=("fg_green", "bold"),
+        menu_highlight_style=("fg_green", "bold"),
     )
     idx = menu.show()
     if idx is None:
@@ -156,13 +168,13 @@ def select_rounds():
 def main():
     mode = select_mode()
     if mode is None:
-        print("\n  cancelled.\n")
+        print(f"\n  {t.dim('cancelled.')}\n")
         return
 
     if mode == "reopen":
         ruling_path = select_ruling()
         if ruling_path is None:
-            print("\n  cancelled.\n")
+            print(f"\n  {t.dim('cancelled.')}\n")
             return
         print()
         reopen(ruling_path)
@@ -172,7 +184,7 @@ def main():
 
     topic = get_topic()
     if topic is None:
-        print("\n  no topic entered.\n")
+        print(f"\n  {t.dim('no topic entered.')}\n")
         return
 
     context_file = get_context_file()
@@ -183,7 +195,7 @@ def main():
 
     rounds = select_rounds()
     if rounds is None:
-        print("\n  cancelled.\n")
+        print(f"\n  {t.dim('cancelled.')}\n")
         return
 
     print()

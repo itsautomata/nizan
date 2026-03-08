@@ -3,6 +3,7 @@
 import os
 import glob
 from simple_term_menu import TerminalMenu
+from core import theme as t
 
 BASE_DIR = os.path.dirname(__file__)
 
@@ -19,21 +20,21 @@ def count_files(path):
 def clean(name, path):
     files = glob.glob(os.path.join(path, "*.md"))
     if not files:
-        print(f"\n  {name}/ is already empty.\n")
+        print(f"\n  {t.dim(f'{name}/ is already empty.')}\n")
         return
 
-    print(f"\n  {len(files)} file(s) in {name}/:\n")
+    print(f"\n  {t.label(f'{len(files)} file(s) in {name}/:')}\n")
     for f in sorted(files):
-        print(f"    {os.path.basename(f)}")
+        print(f"    {t.dim(os.path.basename(f))}")
 
-    confirm = input(f"\n  delete all? [y/N] ").strip().lower()
+    confirm = input(f"\n  {t.label('delete all?')} {t.dim('[y/N]')} ").strip().lower()
     if confirm != "y":
-        print("\n  cancelled.\n")
+        print(f"\n  {t.dim('cancelled.')}\n")
         return
 
     for f in files:
         os.remove(f)
-    print(f"\n  {name}/ cleaned. {len(files)} file(s) removed.\n")
+    print(f"\n  {t.header(f'{name}/ cleaned.')} {t.dim(f'{len(files)} file(s) removed.')}\n")
 
 
 def main():
@@ -42,12 +43,17 @@ def main():
         n = count_files(path)
         options.append(f"{name}  ({n} files)")
 
-    print("\nnizan: clean records\n")
-    print("select folder to clean:\n")
-    menu = TerminalMenu(options, title="")
+    print(f"\n{t.header('nizan: clean records')}\n")
+    print(f"  {t.label('select folder to clean:')}\n")
+    menu = TerminalMenu(
+        options,
+        title="",
+        menu_cursor_style=("fg_green", "bold"),
+        menu_highlight_style=("fg_green", "bold"),
+    )
     idx = menu.show()
     if idx is None:
-        print("\n  cancelled.\n")
+        print(f"\n  {t.dim('cancelled.')}\n")
         return
 
     name = list(TARGETS.keys())[idx]

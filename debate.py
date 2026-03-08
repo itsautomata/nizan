@@ -5,6 +5,7 @@ import re
 import sys
 from datetime import date
 from core.sigil import Sigil
+from core import theme as t
 from agents import moderator, advocate, critic, judge
 from config import ROUNDS, DEFAULT_MODE
 from core import rag
@@ -28,29 +29,29 @@ def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None, context_file=N
 
     if context_file:
         context_source = os.path.basename(context_file)
-        print(f"\n  loading context from {context_source}...")
+        print(f"\n  {t.status('loading context from')} {t.label(context_source)}")
         n = rag.load(context_file)
         context = rag.retrieve(topic)
-        print(f"  {n} chunks indexed, top 5 retrieved.\n")
+        print(f"  {t.status(f'{n} chunks indexed, top 5 retrieved.')}\n")
 
     sigil = Sigil(topic, mode=mode, priorities=priorities, context=context, context_source=context_source)
 
     label = "structured debate" if mode == "normal" else "decision analysis"
-    print(f"\nnizan: {label}\n")
-    print(f"topic: {topic}")
+    print(f"\n{t.header(f'nizan: {label}')}\n")
+    print(f"{t.label('topic:')} {topic}")
     header = f"mode: {mode} | rounds: {rounds}"
     if priorities:
         header += f" | priorities: {', '.join(priorities)}"
     if context_source:
         header += f" | context: {context_source}"
-    print(header + "\n")
-    print("=" * 60)
+    print(t.dim(header) + "\n")
+    print(t.heavy_line())
 
     # moderator frames the debate
-    print("\n[MODERATOR] framing the debate...\n")
+    print(f"\n{t.agent('moderator')} {t.status('framing the debate...')}\n")
     framing = moderator.respond(topic, mode=mode)
     sigil.add("moderator", framing)
-    print("\n\n" + "-" * 60)
+    print("\n\n" + t.line())
 
     # debate rounds
     for round_num in range(1, rounds + 1):
@@ -61,50 +62,50 @@ def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None, context_file=N
             adv_label = f"rebuttal (round {round_num})"
             crt_label = f"rebuttal (round {round_num})"
 
-        print(f"\n[ADVOCATE] {adv_label}...\n")
+        print(f"\n{t.agent('advocate')} {t.status(f'{adv_label}...')}\n")
         adv_response = advocate.respond(sigil, mode=mode)
         sigil.add("advocate", adv_response)
-        print("\n\n" + "-" * 60)
+        print("\n\n" + t.line())
 
-        print(f"\n[CRITIC] {crt_label}...\n")
+        print(f"\n{t.agent('critic')} {t.status(f'{crt_label}...')}\n")
         crt_response = critic.respond(sigil, mode=mode)
         sigil.add("critic", crt_response)
-        print("\n\n" + "-" * 60)
+        print("\n\n" + t.line())
 
     # judge delivers verdict
     judge_label = "evaluating" if mode == "normal" else "analyzing"
-    print(f"\n[JUDGE] {judge_label}...\n")
+    print(f"\n{t.agent('judge')} {t.status(f'{judge_label}...')}\n")
     verdict = judge.respond(sigil, mode=mode, priorities=priorities)
     sigil.add("judge", verdict)
-    print("\n\n" + "=" * 60)
+    print("\n\n" + t.heavy_line())
 
     # reopening loop (decision mode, interactive only)
     if mode == "decision" and interactive:
         reopen_num = 0
         while True:
-            factor = input("\n  new factor? (enter to finish): ").strip()
+            factor = input(f"\n  {t.label('new factor?')} {t.dim('(enter to finish):')} ").strip()
             if not factor:
                 break
             reopen_num += 1
 
             sigil.add("new_factor", factor)
-            print(f"\n[NEW FACTOR #{reopen_num}] {factor}")
-            print("\n" + "-" * 60)
+            print(f"\n{t.agent('new_factor')} {t.BRIGHT_GREEN}#{reopen_num}{t.RESET} {factor}")
+            print("\n" + t.line())
 
-            print("\n[ADVOCATE] reopening argument...\n")
+            print(f"\n{t.agent('advocate')} {t.status('reopening argument...')}\n")
             adv_response = advocate.respond(sigil, mode="reopen")
             sigil.add("advocate", adv_response)
-            print("\n\n" + "-" * 60)
+            print("\n\n" + t.line())
 
-            print("\n[CRITIC] reopening argument...\n")
+            print(f"\n{t.agent('critic')} {t.status('reopening argument...')}\n")
             crt_response = critic.respond(sigil, mode="reopen")
             sigil.add("critic", crt_response)
-            print("\n\n" + "-" * 60)
+            print("\n\n" + t.line())
 
-            print("\n[JUDGE] re-evaluating...\n")
+            print(f"\n{t.agent('judge')} {t.status('re-evaluating...')}\n")
             verdict = judge.respond(sigil, mode="reopen", priorities=priorities)
             sigil.add("judge", verdict)
-            print("\n\n" + "=" * 60)
+            print("\n\n" + t.heavy_line())
 
     # save the record
     artifact = "sigil" if mode == "normal" else "ruling"
@@ -113,74 +114,74 @@ def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None, context_file=N
 
     auto_slug = slugify(topic)
     if interactive:
-        custom = input(f"\n  save as ({auto_slug}): ").strip()
+        custom = input(f"\n  {t.dim(f'save as ({auto_slug}):')} ").strip()
         if custom:
             auto_slug = slugify(custom)
 
     filename = f"{date.today()}_{auto_slug}.md"
     path = os.path.join(record_dir, filename)
     sigil.save(path)
-    print(f"\ncomplete. {artifact} saved to: {artifact}/{filename}\n")
+    print(f"\n{t.header('complete.')} {t.label(f'{artifact} saved to: {artifact}/{filename}')}\n")
 
 
 def reopen(ruling_path, priorities=None):
     """reopen a saved ruling with new factors."""
     sigil = Sigil.load(ruling_path)
 
-    print(f"\nnizan: reopening\n")
-    print(f"topic: {sigil.topic}")
-    print(f"original ruling: {os.path.basename(ruling_path)}\n")
-    print("=" * 60)
+    print(f"\n{t.header('nizan: reopening')}\n")
+    print(f"{t.label('topic:')} {sigil.topic}")
+    print(f"{t.dim(f'original ruling: {os.path.basename(ruling_path)}')}\n")
+    print(t.heavy_line())
 
     # print the original judge's ruling (last judge entry)
     for entry in reversed(sigil._entries):
         if entry["role"] == "judge":
-            print(f"\n[JUDGE] previous ruling:\n\n{entry['content']}")
+            print(f"\n{t.agent('judge')} {t.status('previous ruling:')}\n\n{entry['content']}")
             break
-    print("\n" + "=" * 60)
+    print("\n" + t.heavy_line())
 
     reopen_num = 0
     while True:
-        factor = input("\n  new factor? (enter to finish): ").strip()
+        factor = input(f"\n  {t.label('new factor?')} {t.dim('(enter to finish):')} ").strip()
         if not factor:
             if reopen_num == 0:
-                print("\n  no factors introduced.\n")
+                print(f"\n  {t.dim('no factors introduced.')}\n")
                 return
             break
         reopen_num += 1
 
         sigil.add("new_factor", factor)
-        print(f"\n[NEW FACTOR #{reopen_num}] {factor}")
-        print("\n" + "-" * 60)
+        print(f"\n{t.agent('new_factor')} {t.BRIGHT_GREEN}#{reopen_num}{t.RESET} {factor}")
+        print("\n" + t.line())
 
-        print("\n[ADVOCATE] reopening argument...\n")
+        print(f"\n{t.agent('advocate')} {t.status('reopening argument...')}\n")
         adv_response = advocate.respond(sigil, mode="reopen")
         sigil.add("advocate", adv_response)
-        print("\n\n" + "-" * 60)
+        print("\n\n" + t.line())
 
-        print("\n[CRITIC] reopening argument...\n")
+        print(f"\n{t.agent('critic')} {t.status('reopening argument...')}\n")
         crt_response = critic.respond(sigil, mode="reopen")
         sigil.add("critic", crt_response)
-        print("\n\n" + "-" * 60)
+        print("\n\n" + t.line())
 
-        print("\n[JUDGE] re-evaluating...\n")
+        print(f"\n{t.agent('judge')} {t.status('re-evaluating...')}\n")
         verdict = judge.respond(sigil, mode="reopen", priorities=priorities or sigil.priorities)
         sigil.add("judge", verdict)
-        print("\n\n" + "=" * 60)
+        print("\n\n" + t.heavy_line())
 
     # save updated ruling
     record_dir = RECORD_DIRS["decision"]
     os.makedirs(record_dir, exist_ok=True)
 
     auto_slug = slugify(sigil.topic) + "-reopened"
-    custom = input(f"\n  save as ({auto_slug}): ").strip()
+    custom = input(f"\n  {t.dim(f'save as ({auto_slug}):')} ").strip()
     if custom:
         auto_slug = slugify(custom)
 
     filename = f"{date.today()}_{auto_slug}.md"
     path = os.path.join(record_dir, filename)
     sigil.save(path)
-    print(f"\ncomplete. ruling saved to: ruling/{filename}\n")
+    print(f"\n{t.header('complete.')} {t.label(f'ruling saved to: ruling/{filename}')}\n")
 
 
 if __name__ == "__main__":
