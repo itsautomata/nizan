@@ -7,7 +7,7 @@ a multi-agent debate and decision system. four AI agents with distinct roles eng
 > <sub>work in progress — actively being built.</sub>
 
 <p align="center">
-  <img src="demo.gif" alt="nizan demo" width="720">
+  <img src="assets/demo_trimmed.gif" alt="nizan demo" width="600">
 </p>
 
 ---
