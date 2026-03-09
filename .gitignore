@@ -5,3 +5,4 @@ __pycache__/
 .arch*
 sigil/*.md
 ruling/*.md
+!ruling/demo_*.md

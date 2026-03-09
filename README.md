@@ -6,9 +6,9 @@ a multi-agent debate and decision system. four AI agents with distinct roles eng
 
 > <sub>work in progress — actively being built.</sub>
 
-<p align="center">
-  <img src="assets/demo_trimmed.gif" alt="nizan demo" width="600">
-</p>
+<img src="assets/demo_trimmed.gif" alt="nizan demo" width="600">
+
+<sub>decision mode with context injection. full ruling: [ruling/demo_rust-vs-python.md](ruling/demo_rust-vs-python.md)</sub>
 
 ---
 
@@ -82,12 +82,15 @@ python nizan.py
 
 the menu walks you through:
 
-1. **select mode**: normal or decision (arrow keys)
+1. **select mode**: normal, decision, or reopen (arrow keys)
 2. **guidelines**: how to frame your topic for the selected mode
 3. **enter topic**: type your question
 4. **context file** (optional): path to a document to ground the debate in
-5. **select rounds**: 1 to 4 (arrow keys, default 2)
-6. the debate runs
+5. **priorities** (decision mode only): pick up to 3 dimensions that shape the ruling
+6. **select rounds**: 1 to 4 (arrow keys, default 2)
+7. the debate runs
+8. **new factor?** (decision mode): introduce new information to trigger a re-round
+9. **save as**: name the record or press enter for auto-generated slug
 
 ### quick run
 
@@ -194,6 +197,30 @@ bad:
   "is rust good?"                  (not a choice)
 ```
 
+### reopening
+
+after a decision ruling, you can introduce **new factors** that trigger a reopening round. advocate and critic each argue what the new factor changes, then the judge re-evaluates.
+
+```
+     JUDGE            initial ruling
+       │
+  new factor introduced
+       │
+    ADVOCATE          argues impact on Option A
+       │
+     CRITIC           argues impact on Option B
+       │
+     JUDGE            updated ruling
+       │
+  (loop until done)
+```
+
+new factors can be introduced:
+- **inline**: right after a ruling, prompted with "new factor?"
+- **from a saved ruling**: select "reopen" in the menu, pick a ruling file, introduce factors
+
+this mirrors how real decisions work: new information doesn't just change the verdict, it changes the arguments.
+
 ### context injection (RAG)
 
 optionally provide a document (`.md`, `.txt`) to ground the debate in real information. the file is chunked, embedded, and stored in a local vector database (ChromaDB). the most relevant chunks are retrieved using the topic as a query and injected into the shared transcript before the debate starts.
@@ -236,15 +263,17 @@ nizan/
 ├── core/
 │   ├── llm.py              ← LLM wrapper (litellm, any provider)
 │   ├── rag.py              ← RAG context retrieval (chromadb)
-│   └── sigil.py            ← shared transcript class
+│   ├── sigil.py            ← shared transcript class
+│   └── theme.py            ← terminal theme
+├── assets/                 ← demo recordings
 ├── sigil/                  ← saved debate records (normal mode)
 ├── ruling/                 ← saved decision records (decision mode)
 ├── debate.py               ← orchestrator
-├── nizan.py                 ← interactive CLI entry point
-├── clean.py                ← clean saved records
-├── config.py               ← settings + validation
+├── nizan.py                ← interactive CLI entry point
+├── clean.py
+├── config.py
 ├── requirements.txt
-└── .env.example            ← .env template
+└── .env.example
 ```
 
 ---
