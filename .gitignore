@@ -2,7 +2,6 @@
 __pycache__/
 *.pyc
 .venv/
-.arch*
 sigil/*.md
 ruling/*.md
-!ruling/demo_*.md
+!ruling/demo_*.mdlocal_docs/

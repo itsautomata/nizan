@@ -204,7 +204,28 @@ def reopen(ruling_path, priorities=None):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print('usage: python debate.py "your debate topic here"')
-        sys.exit(1)
-    run(sys.argv[1], interactive=False)
+    import argparse
+
+    parser = argparse.ArgumentParser(description="nizan: multi-agent debate and decision system")
+    parser.add_argument("topic", help="the debate topic or decision to analyze")
+    parser.add_argument("--mode", choices=["normal", "decision"], default=DEFAULT_MODE, help="debate mode (default: normal)")
+    parser.add_argument("--rounds", type=int, default=ROUNDS, choices=range(1, 5), help="number of rounds (default: 2)")
+    parser.add_argument("--context", metavar="FILE", help="path to a document for RAG context injection")
+    parser.add_argument("--priorities", help="comma-separated priorities for decision mode (e.g. \"cost,risk tolerance\")")
+    parser.add_argument("--stress-test", action="store_true", help="challenge the ruling after it lands")
+
+    args = parser.parse_args()
+
+    priorities = None
+    if args.priorities:
+        priorities = [p.strip() for p in args.priorities.split(",")]
+
+    run(
+        args.topic,
+        mode=args.mode,
+        rounds=args.rounds,
+        priorities=priorities,
+        context_file=args.context,
+        interactive=False,
+        stress_test=args.stress_test,
+    )
