@@ -4,4 +4,5 @@ __pycache__/
 .venv/
 sigil/*.md
 ruling/*.md
-!ruling/demo_*.mdlocal_docs/
+!ruling/demo_*.md
+local_docs/

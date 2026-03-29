@@ -88,7 +88,8 @@ the menu walks you through:
 4. **context file** (optional): path to a document to ground the debate in
 5. **priorities** (decision mode only): pick up to 3 dimensions that shape the ruling
 6. **select rounds**: 1 to 4 (arrow keys, default 2)
-7. the debate runs
+7. **stress-test?**: opt-in adversarial challenge after the ruling
+8. the debate runs
 8. **new factor?** (decision mode): introduce new information to trigger a re-round
 9. **save as**: name the record or press enter for auto-generated slug
 
@@ -99,6 +100,20 @@ python debate.py "should AI be open source?"
 ```
 
 runs a normal-mode debate with 2 rounds.
+
+### headless CLI
+
+```bash
+python debate.py --mode decision --rounds 3 --context doc.md --priorities "cost,risk tolerance" --stress-test "rust vs go for CLI"
+```
+
+| flag | description |
+|------|-------------|
+| `--mode` | `normal` or `decision` (default: normal) |
+| `--rounds` | 1-4 (default: 2) |
+| `--context` | path to a document for RAG context injection |
+| `--priorities` | comma-separated priorities for decision mode |
+| `--stress-test` | challenge the ruling after it lands |
 
 ### clean saved records
 
@@ -221,6 +236,22 @@ new factors can be introduced:
 
 this mirrors how real decisions work: new information doesn't just change the verdict, it changes the arguments.
 
+### stress-test
+
+opt-in adversarial round. after the judge rules, both advocate and critic get one final shot to break the ruling. the judge then re-evaluates under pressure — reinforcing, revising, or reversing.
+
+```
+     JUDGE            initial ruling
+       │
+    ADVOCATE          challenges the ruling
+       │
+     CRITIC           challenges the ruling
+       │
+     JUDGE            final verdict (reinforced / revised / reversed)
+```
+
+adds 3 LLM calls when enabled. available in the interactive menu or via `--stress-test` flag.
+
 ### context injection (RAG)
 
 optionally provide a document (`.md`, `.txt`) to ground the debate in real information. the file is chunked, embedded, and stored in a local vector database (ChromaDB). the most relevant chunks are retrieved using the topic as a query and injected into the shared transcript before the debate starts.
@@ -265,6 +296,7 @@ nizan/
 │   ├── rag.py              ← RAG context retrieval (chromadb)
 │   ├── sigil.py            ← shared transcript class
 │   └── theme.py            ← terminal theme
+├── tests/                  ← unit tests
 ├── assets/                 ← demo recordings
 ├── sigil/                  ← saved debate records (normal mode)
 ├── ruling/                 ← saved decision records (decision mode)
