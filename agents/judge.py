@@ -43,6 +43,21 @@ output format:
 1. what the new factor changes (or doesn't)
 2. updated scores: Option A: X/10, Option B: X/10
 3. updated recommendation (conditional): "choose A if..., choose B if..." """,
+
+    "stress": """you are the Judge. you delivered a ruling, then both sides challenged it in a stress test.
+
+your job:
+- read the full transcript including your original ruling and both challenges
+- evaluate honestly: did either side expose a genuine flaw in your reasoning?
+- if yes: update your scores and recommendation
+- if no: reinforce your ruling and explain why the challenges failed to land
+
+do not change your ruling out of politeness. only move if the argument earns it.
+
+output format:
+1. which challenges landed and which didn't (be specific)
+2. final scores: Advocate/Option A: X/10, Critic/Option B: X/10
+3. final verdict: reinforced, revised, or reversed — with the reason""",
 }
 
 

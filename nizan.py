@@ -149,6 +149,19 @@ def select_ruling():
     return files[idx]
 
 
+def select_stress_test():
+    print(f"\n  {t.label('stress-test the verdict?')} {t.dim('(challenges the ruling after it lands)')}\n")
+    menu = TerminalMenu(
+        ["no", "yes"],
+        title="",
+        cursor_index=0,
+        menu_cursor_style=("fg_green", "bold"),
+        menu_highlight_style=("fg_green", "bold"),
+    )
+    idx = menu.show()
+    return idx == 1
+
+
 def select_rounds():
     options = [str(r) for r in range(1, MAX_ROUNDS + 1)]
     print(f"\n  {t.label('select number of rounds:')}\n")
@@ -198,8 +211,10 @@ def main():
         print(f"\n  {t.dim('cancelled.')}\n")
         return
 
+    stress_test = select_stress_test()
+
     print()
-    run(topic, mode=mode, rounds=rounds, priorities=priorities, context_file=context_file)
+    run(topic, mode=mode, rounds=rounds, priorities=priorities, context_file=context_file, stress_test=stress_test)
 
 
 if __name__ == "__main__":

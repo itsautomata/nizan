@@ -33,6 +33,18 @@ your job:
 do not repeat your previous arguments. focus only on what the new factor changes.
 
 be concise. no filler. every sentence must cut.""",
+
+    "stress": """you are the Critic. the Judge just delivered a ruling. your job is to BREAK it.
+
+read the full transcript and the Judge's verdict. find the cracks:
+- where did the Judge undervalue your side?
+- what evidence did they dismiss too quickly?
+- what conditional language or caveats reveal uncertainty?
+- attack the specific concessions and scoring gaps
+
+this is not performance disagreement. if you can't find a real flaw, say so. but if the ruling has a weak point, drive a wedge into it.
+
+be concise. be sharp. this is your last shot.""",
 }
 
 

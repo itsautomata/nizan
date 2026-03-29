@@ -23,7 +23,7 @@ def slugify(text):
     return re.sub(r"[\s_]+", "-", text)[:60]
 
 
-def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None, context_file=None, interactive=True):
+def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None, context_file=None, interactive=True, stress_test=False):
     context = None
     context_source = None
 
@@ -44,6 +44,8 @@ def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None, context_file=N
         header += f" | priorities: {', '.join(priorities)}"
     if context_source:
         header += f" | context: {context_source}"
+    if stress_test:
+        header += " | stress-test: on"
     print(t.dim(header) + "\n")
     print(t.heavy_line())
 
@@ -78,6 +80,23 @@ def run(topic, mode=DEFAULT_MODE, rounds=ROUNDS, priorities=None, context_file=N
     verdict = judge.respond(sigil, mode=mode, priorities=priorities)
     sigil.add("judge", verdict)
     print("\n\n" + t.heavy_line())
+
+    # stress test (opt-in)
+    if stress_test:
+        print(f"\n{t.agent('advocate')} {t.status('challenging the ruling...')}\n")
+        adv_stress = advocate.respond(sigil, mode="stress")
+        sigil.add("advocate", adv_stress)
+        print("\n\n" + t.line())
+
+        print(f"\n{t.agent('critic')} {t.status('challenging the ruling...')}\n")
+        crt_stress = critic.respond(sigil, mode="stress")
+        sigil.add("critic", crt_stress)
+        print("\n\n" + t.line())
+
+        print(f"\n{t.agent('judge')} {t.status('re-evaluating under pressure...')}\n")
+        verdict = judge.respond(sigil, mode="stress", priorities=priorities)
+        sigil.add("judge", verdict)
+        print("\n\n" + t.heavy_line())
 
     # reopening loop (decision mode, interactive only)
     if mode == "decision" and interactive:
